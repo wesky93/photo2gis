@@ -5,6 +5,6 @@ make shp file using by photo exif gps data
 
 build
 ```
-pyinstaller -F main.py --noconsole
+pyinstaller -F main.py --noconsole -n photo2gis
 
 ```
