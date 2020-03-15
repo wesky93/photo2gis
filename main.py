@@ -65,23 +65,29 @@ class Application(tk.Frame):
         self.fails = []
         self.success = 0
 
-        with shapefile.Writer(self.export_path, shapeType=shapefile.POINT,encoding="utf8") as shp:
-            shp.field('file_path', 'C')
-            shp.field('lat', 'C')
-            shp.field('long', 'C')
+        with shapefile.Writer(self.export_path, shapeType=shapefile.POINT, encoding="utf8") as shp:
+            shp.field('file_path', 'C', size=255)
+            shp.field('lat', 'F')
+            shp.field('long', 'F')
+            shp.field('create_at', 'C')
 
             for data in self.getData():
-                shp.record(data['file_path'], data['lat'], data['long'])
+                shp.record(
+                    data['file_path'],
+                    data['lat'],
+                    data['long'],
+                    data['create_at'],
+                )
                 shp.point(data["long"], data["lat"])
 
-        with open(self.export_path+'.prj','w') as f:
-            f.write('GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]]')
+        with open(self.export_path + '.prj', 'w') as f:
+            f.write(
+                'GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]]')
         self.finish()
 
     def getData(self):
         for x in self.getFiles():
             try:
-
                 exif = get_exif(x)
                 if gps := exif.get('GPSInfo'):
                     self.success += 1
@@ -89,6 +95,7 @@ class Application(tk.Frame):
                         "file_path": x,
                         "lat": gps.get('Latitude'),
                         "long": gps.get('Longitude'),
+                        "create_at": exif.get('DateTime')
                     }
                 else:
                     raise ValueError()
